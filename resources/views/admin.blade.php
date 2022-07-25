@@ -1,7 +1,7 @@
 @extends('layouts.basic')
 
 @section('title')
-    Products
+    Admin Panel
 @endsection
 
 @section('content')
@@ -9,5 +9,5 @@
 @endsection
 
 @section('scripts')
-    @vite(['resources/js/app.js'])
+    @vite(['resources/js/admin.js'])
 @endsection

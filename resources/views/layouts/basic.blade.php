@@ -19,10 +19,14 @@
     </style>
 </head>
 <body>
+<header>
+
+</header>
 <main>
     <div class="container">
-        @yield('content')
+        <div id="app"></div>
     </div>
 </main>
+@yield('scripts')
 </body>
 </html>

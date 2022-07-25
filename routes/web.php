@@ -13,6 +13,11 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
+Route::get('/', fn() => view('welcome'));
+Route::get('/login', fn() => view('login'))->name('login');
+
+Route::apiResource('products', \App\Http\Controllers\Api\ProductController::class)->only('index');
+Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
+    Route::get('/', fn() => view('admin'));
+    Route::apiResource('products', \App\Http\Controllers\Api\ProductController::class)->except('index');
 });
