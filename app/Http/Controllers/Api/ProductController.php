@@ -11,12 +11,52 @@ use Illuminate\Http\Request;
 class ProductController extends Controller
 {
     /**
+     * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function index()
+    public function index(Request $request)
     {
+        $filters = $request->all();
+
+
+        if ($filters) {
+            $products = Product::all()->toQuery();
+
+            if ($filters['name']) {
+                $products->where('name', 'LIKE', "%{$filters['name']}%");
+            }
+
+            if ($filters['category_id']) {
+                $products->whereRelation('categories', ['category_id' => $filters['category_id']]);
+            }
+
+            if ($filters['category_name']) {
+                $products->whereRelation('categories', 'name', 'LIKE', "%{$filters['category_name']}%");
+            }
+
+            if ((int)$filters['price_from']) {
+                $products->where('price', '>=', $filters['price_from']);
+            }
+
+            if ((int)$filters['price_to']) {
+                $products->where('price', '<=', $filters['price_to']);
+            }
+
+            if (($filters['is_published'] == 'true')) {
+                $products->where('is_published', '=', true);
+            }
+
+            if ($filters['not_deleted'] == 'true') {
+                $products->where('is_deleted', '=', false);
+            }
+
+            $products = $products->get();
+        } else {
+            $products = Product::all();
+        }
+
         return response()->json([
-            'products' => Product::all(),
+            'products' => $products,
             'categories' => Category::all(),
         ]);
     }
