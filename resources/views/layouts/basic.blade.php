@@ -20,11 +20,28 @@
 </head>
 <body>
 <header>
-
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <div class="d-flex align-items">
+                <a class="navbar-brand" href="/">Main</a>
+                @php
+                $isAdmin = auth()->user() && auth()->user()->name == 'admin';
+                @endphp
+                @if ($isAdmin)
+                    <a class="navbar-brand" href="/admin">Panel</a>
+                @endif
+            </div>
+            <div>
+                <a type="button" class="btn btn-primary" href="/{{ $isAdmin ? 'logout' : 'login' }}">
+                    {{ $isAdmin ? 'Logout' : 'Login' }}
+                </a>
+            </div>
+        </div>
+    </nav>
 </header>
 <main>
-    <div class="container">
-        <div id="app"></div>
+    <div class="container mt-5">
+        @yield('content')
     </div>
 </main>
 @yield('scripts')

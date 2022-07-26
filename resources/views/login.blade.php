@@ -1,11 +1,11 @@
 @extends('layouts.basic')
 
 @section('title')
-    Admin Panel
+    Login
 @endsection
 
 @section('content')
-
+    <div id="app"></div>
 @endsection
 
 @section('scripts')

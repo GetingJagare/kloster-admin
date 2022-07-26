@@ -14,7 +14,7 @@ class AdminMiddleware
      */
     public function handle(Request $request, Closure $next)
     {
-        if (!$request->user()->name != 'admin') {
+        if ($request->user()->name != 'admin') {
             return route('login');
         }
 
