@@ -10,6 +10,7 @@ class Product extends Model
     use HasFactory;
 
     protected $table = 'product';
+    protected $fillable = ['name', 'content', 'price', 'is_published', 'is_deleted'];
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany

@@ -4,6 +4,7 @@ import {createRouter, createWebHashHistory} from 'vue-router';
 import Categories from "./admin/views/Categories.vue";
 import Products from "./admin/views/Products.vue";
 import Main from "./admin/views/Main.vue";
+import EditProduct from "./admin/views/EditProduct.vue";
 
 const routes = [
     {
@@ -19,6 +20,11 @@ const routes = [
         path: '/products',
         component: Products,
         name: 'products'
+    },
+    {
+        path: '/edit-product/:id',
+        component: EditProduct,
+        name: 'edit-product'
     },
 ];
 
