@@ -84,10 +84,17 @@ class CategoryController extends Controller
      */
     public function destroy(Category $category)
     {
+        if ($category->products()->count()) {
+            return response()->json([
+                'success' => 0,
+                'message' => "Category contains at least one product!",
+            ]);
+        }
+
         $category->delete();
 
         return response()->json([
-            'id' => $category->id,
+            'success' => 1,
             'message' => "Product deleted successfully!",
         ]);
     }

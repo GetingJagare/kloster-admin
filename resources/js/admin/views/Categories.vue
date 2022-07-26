@@ -16,7 +16,12 @@
             </thead>
             <tbody>
             <tr v-for="cat in categories">
-                <td valign="middle">{{cat.name}}</td>
+                <td valign="middle">
+                    {{cat.name}}
+                    <span class="alert alert-danger d-block" v-if="errorMessage && categoryErrorId === cat.id">
+                        {{ errorMessage }}
+                    </span>
+                </td>
                 <td><button class="btn btn-danger delete-btn" @click="remove(cat.id)">Delete</button></td>
             </tr>
             </tbody>
@@ -32,6 +37,8 @@ export default {
             adding: false,
             name: '',
             categories: [],
+            errorMessage: '',
+            categoryErrorId: 0,
         }
     },
     async mounted() {
@@ -53,8 +60,15 @@ export default {
 
         async remove(id)
         {
-            await axios.delete(`/admin/categories/${id}`);
+            const res = await axios.delete(`/admin/categories/${id}`);
+            if (!res.data.success) {
+                this.errorMessage = res.data.message;
+                this.categoryErrorId = id;
+                return;
+            }
 
+            this.errorMessage = '';
+            this.categoryErrorId = 0;
             const index = this.categories.findIndex((c) => c.id === id);
             this.categories.splice(index, 1);
         }
