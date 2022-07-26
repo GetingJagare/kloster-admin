@@ -17,6 +17,15 @@
                     Published
                 </label>
             </div>
+            <div class="mb-3">
+                <label for="categories" class="form-label">Categories</label>
+                <select class="form-control" multiple id="categories" v-model="product.categories">
+                    <option v-for="cat in categories" :value="cat.id">{{ cat.name }}</option>
+                </select>
+            </div>
+            <div class="alert alert-danger" v-if="errorMessage">
+                {{ errorMessage }}
+            </div>
             <button type="submit" class="btn btn-primary">Save</button>
         </form>
         <table class="table mt-4" v-if="products.length">
@@ -37,12 +46,16 @@
                 </td>
                 <td>
                     <span class="w-100 d-flex justify-content-end">
-                        <router-link :to="{name: 'edit-product', params: {id: pr.id}}" class="ms-2 btn btn-primary">Edit</router-link>
-                        <button :class="`btn btn-${pr.is_published ? 'warning' : 'success'}`"
-                                class="publish-btn ms-2" @click="publish(pr.id, !pr.is_published)">
+                        <router-link :to="{name: 'edit-product', params: {id: pr.id}}"
+                                     class="ms-2 btn btn-primary">Edit</router-link>
+                        <button :class="`btn btn-${pr.is_published ? 'warning' : 'success'}`" v-if="!pr.is_deleted"
+                                class="publish-btn ms-2" @click="setProperty(pr, 'is_published', !pr.is_published)">
                             {{ pr.is_published ? 'Unpublish' : 'Publish' }}
                         </button>
-                        <button class="ms-2 btn btn-danger delete-btn" @click="remove(pr.id)">Delete</button>
+                        <button class="ms-2 btn btn-danger delete-btn"
+                                @click="setProperty(pr, 'is_deleted', !pr.is_deleted)">
+                            {{ pr.is_deleted ? 'Undelete' : 'Delete' }}
+                        </button>
                     </span>
                 </td>
             </tr>
@@ -62,31 +75,46 @@ export default {
                 content: '',
                 price: 0,
                 is_published: false,
+                categories: [],
             },
+            errorMessage: '',
             products: [],
+            categories: [],
         }
     },
     async mounted() {
         const res = await axios.get('/admin/products');
         this.products = res.data.products;
+        this.categories = res.data.categories;
     },
     methods: {
-        async save()
-        {
+        async save() {
             const res = await axios.post(
                 `/admin/products`,
                 this.product
             );
 
+            if (!res.data.success) {
+                this.errorMessage = res.data.message;
+                return;
+            }
+
             this.products.unshift(res.data.product);
+            this.product = {
+                name: '',
+                    content: '',
+                    price: 0,
+                    is_published: false,
+                    categories: [],
+            };
+            this.adding = false;
+            this.errorMessage = '';
         },
-        async remove(id)
-        {
-
-        },
-        async publish(id, value = true)
-        {
-
+        async setProperty(product, property = '', value = true) {
+            product[property] = value;
+            await axios.put(`/admin/products/${product.id}`, product);
+            const index = this.products.findIndex((pr) => pr.id === product.id);
+            this.products[index] = product;
         }
     }
 }

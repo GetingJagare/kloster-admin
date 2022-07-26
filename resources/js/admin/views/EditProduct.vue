@@ -17,6 +17,17 @@
                     Published
                 </label>
             </div>
+            <div class="mb-3">
+                <label for="categories" class="form-label">Categories</label>
+                <select class="form-control" multiple id="categories" v-model="productCategories">
+                    <option v-for="cat in categories" :value="cat.id">
+                        {{ cat.name }}
+                    </option>
+                </select>
+            </div>
+            <div class="alert alert-danger" v-if="errorMessage">
+                {{ errorMessage }}
+            </div>
             <button type="submit" class="btn btn-primary">Save</button>
         </form>
     </div>
@@ -24,7 +35,35 @@
 
 <script>
 export default {
-    name: "EditProduct"
+    name: "EditProduct",
+    data() {
+        return {
+            product: {},
+            productCategories: [],
+            categories: [],
+            errorMessage: '',
+        }
+    },
+    async mounted() {
+        const res = await axios.get(`/admin/products/${this.$route.params.id}`);
+        this.product = res.data.product;
+        this.productCategories = res.data.product.categories.map((c) => c.id);
+        this.categories = res.data.categories;
+    },
+    methods: {
+        async save()
+        {
+            this.product.categories = this.productCategories;
+            const res = await axios.put(`/admin/products/${this.product.id}`, this.product);
+            if (!res.data.success) {
+                this.errorMessage = res.data.message;
+                return;
+            }
+
+            this.product = res.data.product;
+            this.errorMessage = '';
+        }
+    }
 }
 </script>
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreProductRequest;
+use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Http\Request;
 
@@ -15,7 +16,8 @@ class ProductController extends Controller
     public function index()
     {
         return response()->json([
-            'products' => Product::all()
+            'products' => Product::all(),
+            'categories' => Category::all(),
         ]);
     }
 
@@ -35,23 +37,38 @@ class ProductController extends Controller
      */
     public function store(StoreProductRequest $request)
     {
-        $product = Product::create($request->all());
+        $fields = $request->all();
+        $categoryCount = count($fields['categories']);
+        if ($categoryCount < 2 || $categoryCount > 10) {
+            return response()->json([
+                'success' => 0,
+                'message' => "Product must have from 2 to 10 categories",
+            ]);
+        }
+
+        /**
+         * @var Product $product
+         */
+        $product = Product::create($fields);
+        $product->categories()->attach($fields['categories']);
 
         return response()->json([
+            'success' => 1,
             'message' => "Successfully saved",
             'product' => $product,
         ]);
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Product  $product
-     * @return \Illuminate\Http\Response
+     * @param Product $product
+     * @return \Illuminate\Http\JsonResponse
      */
     public function show(Product $product)
     {
-        //
+        return response()->json([
+            'product' => Product::with('categories')->where(['id' => $product->id])->first(),
+            'categories' => Category::all(),
+        ]);
     }
 
     /**
@@ -66,25 +83,51 @@ class ProductController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Product  $product
-     * @return \Illuminate\Http\Response
+     * @param StoreProductRequest $request
+     * @param Product $product
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function update(Request $request, Product $product)
+    public function update(StoreProductRequest $request, Product $product)
     {
-        //
+        $fields = $request->all();
+        $categoryCount = count($fields['categories']);
+        if ($categoryCount < 2 || $categoryCount > 10) {
+            return response()->json([
+                'message' => "Product must have from 2 to 10 categories",
+                'success' => 0,
+            ]);
+        }
+
+        /**
+         * @var Product $product
+         */
+        $product->update($fields);
+        /**
+         * @var Category $cat
+         */
+        foreach ($product->categories()->get() as $cat) {
+            $product->categories()->detach($cat->id);
+        }
+        $product->categories()->attach($fields['categories']);
+
+        return response()->json([
+            'message' => "Product updated successfully!",
+            'product' => $product,
+            'success' => 1,
+        ]);
     }
 
     /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Product  $product
-     * @return \Illuminate\Http\Response
+     * @param Product $product
+     * @return \Illuminate\Http\JsonResponse
      */
     public function destroy(Product $product)
     {
-        //
+        $product->delete();
+
+        return response()->json([
+            'success' => 1,
+            'message' => "Product deleted successfully!",
+        ]);
     }
 }
